@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Nextup Robotics builds cobots, industrial robots and custom automation for Indian manufacturing. Ghaziabad, India." />
+    <meta name="theme-color" content="#07090c" />
+    <script>
+      // Apply the saved theme (or the visitor's system setting) before the page paints, so there is no flash.
+      (function () {
+        var t = null
+        try { t = localStorage.getItem('theme') } catch (e) {}
+        if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+        document.documentElement.dataset.theme = t
+        document.documentElement.style.colorScheme = t
+        document.documentElement.classList.add('booting')
+      })()
+    </script>
+    <style>
+      /* Loading screen (controlled by src/boot.js). Inline so it paints before anything else. */
+      html.booting { overflow: hidden; }
+      #boot { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #07090c; color: #f1f3f6;
+        transition: opacity 0.7s cubic-bezier(0.7, 0, 0.2, 1), visibility 0.7s; font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; }
+      [data-theme='light'] #boot { background: #f4f5f7; color: #0a0d12; }
+      #boot.boot-out { opacity: 0; visibility: hidden; }
+      .boot-in { display: grid; justify-items: center; gap: 28px; }
+      .boot-mark circle { animation: bootNode 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      .boot-mark circle:nth-child(2) { animation-delay: 0.15s; } .boot-mark circle:nth-child(3) { animation-delay: 0.3s; } .boot-mark circle:nth-child(4) { animation-delay: 0.45s; }
+      .boot-mark path { stroke-dasharray: 90; stroke-dashoffset: 90; animation: bootLine 1.4s ease-in-out infinite; }
+      @keyframes bootNode { 0%, 100% { transform: scale(0.72); opacity: 0.45; } 40% { transform: scale(1); opacity: 1; } }
+      @keyframes bootLine { 0% { stroke-dashoffset: 90; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -90; } }
+      .boot-bar { width: 180px; height: 1px; background: rgba(127, 137, 150, 0.3); overflow: hidden; }
+      .boot-bar i { display: block; height: 100%; background: #3b93f0; transform: scaleX(0); transform-origin: 0 50%; transition: transform 0.4s ease; }
+      [data-theme='light'] .boot-bar i { background: #1660d0; }
+      .boot-meta { display: flex; gap: 14px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+      @media (prefers-reduced-motion: reduce) { .boot-mark circle, .boot-mark path { animation: none; stroke-dashoffset: 0; } }
+    </style>
+    <title>Nextup Robotics | Precision, in motion</title>
+    <link rel="icon" type="image/svg+xml" href="/brand/mark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="boot" role="status" aria-live="polite" aria-label="Loading Nextup Robotics">
+      <div class="boot-in">
+        <svg class="boot-mark" width="82" height="41" viewBox="0 0 82 41" aria-hidden="true">
+          <defs><linearGradient id="boot-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1A9BE3" /><stop offset="1" stop-color="#2457B0" /></linearGradient></defs>
+          <path d="M10 31 30 10 51 31 72 10" fill="none" stroke="url(#boot-g)" stroke-width="5" stroke-linecap="round" />
+          <circle cx="10" cy="31" r="8" fill="url(#boot-g)" /><circle cx="30" cy="10" r="8" fill="url(#boot-g)" />
+          <circle cx="51" cy="31" r="8" fill="url(#boot-g)" /><circle cx="72" cy="10" r="8" fill="url(#boot-g)" />
+        </svg>
+        <div class="boot-bar"><i></i></div>
+        <div class="boot-meta"><span>Nextup Robotics</span><span class="boot-pct">000</span></div>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
