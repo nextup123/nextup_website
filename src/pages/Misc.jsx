@@ -88,14 +88,42 @@ export function Contact() {
   const [params] = useSearchParams()
   const pre = getProduct(params.get('product'))
   const task = APPS.find((a) => a.slug === params.get('task'))
-  const [sent, setSent] = useState(false)
+  const [sent, setSent] = useState(null) // null, or { ref } once the enquiry is stored, or { mail: true }
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
   const [faq, setFaq] = useState(0)
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault()
     const f = Object.fromEntries(new FormData(e.target))
-    const body = `Name: ${f.name}\nPhone: ${f.phone}\nCompany: ${f.company}\nIndustry: ${f.industry}\nInterested in: ${f.product}\n\n${f.what}`
-    window.location.href = `mailto:${SITE.email}?subject=${encodeURIComponent('Automation enquiry from ' + f.name)}&body=${encodeURIComponent(body)}`
-    setSent(true)
+    setError('')
+    if (!f.email && !f.phone) { setError('Please give an email address or a phone number so we can reply.'); return }
+    // No server set up: fall back to the visitor's email app.
+    if (!SITE.contactApi) {
+      const body = `Name: ${f.name}\nEmail: ${f.email}\nPhone: ${f.phone}\nCompany: ${f.company}\nIndustry: ${f.industry}\nInterested in: ${f.product}\n\n${f.what}`
+      window.location.href = `mailto:${SITE.email}?subject=${encodeURIComponent('Automation enquiry from ' + f.name)}&body=${encodeURIComponent(body)}`
+      setSent({ mail: true })
+      return
+    }
+    setSending(true)
+    try {
+      const res = await fetch(`${SITE.contactApi}/api/v1/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: f.name, email: f.email, phone: f.phone, company: f.company, industry: f.industry,
+          product: f.product, message: f.what, website: f.website,
+          source: { page: window.location.pathname + window.location.search, referrer: document.referrer },
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Something went wrong on our side.')
+      setSent({ ref: data.ref })
+    } catch (err) {
+      // A network failure (or the free server waking up) should never lose the enquiry: offer the other ways.
+      setError(err instanceof TypeError ? 'We could not reach our server just now.' : err.message)
+    } finally {
+      setSending(false)
+    }
   }
   return (
     <Page>
@@ -119,7 +147,9 @@ export function Contact() {
               <motion.div key="ok" className="form done" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, ease }}>
                 <div className="tick">✓</div>
                 <h3>Thanks, we’ve got it.</h3>
-                <p>Your email app should have opened with your message. If not, write to {SITE.email} or message us on WhatsApp.</p>
+                {sent.mail
+                  ? <p>Your email app should have opened with your message. If not, write to {SITE.email} or message us on WhatsApp.</p>
+                  : <p>Your enquiry {sent.ref && sent.ref !== 'ENQ-0' ? <b>{sent.ref}</b> : null} has reached our team. We usually reply the same working day, by phone, WhatsApp or email.</p>}
               </motion.div>
             ) : (
               <motion.form key="f" className="form" onSubmit={submit} exit={{ opacity: 0 }}>
@@ -127,7 +157,12 @@ export function Contact() {
                   <label><span className="mono">Name</span><input name="name" required autoComplete="name" /></label>
                   <label><span className="mono">Phone</span><input name="phone" type="tel" autoComplete="tel" /></label>
                 </div>
-                <label><span className="mono">Company</span><input name="company" autoComplete="organization" /></label>
+                <div className="two">
+                  <label><span className="mono">Email</span><input name="email" type="email" autoComplete="email" /></label>
+                  <label><span className="mono">Company</span><input name="company" autoComplete="organization" /></label>
+                </div>
+                {/* Hidden from people; bots that fill every field give themselves away. */}
+                <label className="hp" aria-hidden="true"><span>Website</span><input name="website" tabIndex={-1} autoComplete="off" /></label>
                 <div className="two">
                   <label><span className="mono">Industry</span><select name="industry">{INDUSTRIES.map((x) => <option key={x}>{x}</option>)}</select></label>
                   <label><span className="mono">Interested in</span>
@@ -138,7 +173,12 @@ export function Contact() {
                   </label>
                 </div>
                 <label><span className="mono">What do you want to automate?</span><textarea name="what" rows="5" required defaultValue={task ? `I'd like to automate ${task.name.toLowerCase()}.` : ''} /></label>
-                <button className="btn" type="submit"><span>Send enquiry</span><i><Arrow size={14} /></i></button>
+                {error && (
+                  <p className="form-error" role="alert">
+                    {error} You can also <a href={`https://wa.me/${SITE.phone}`} target="_blank" rel="noreferrer">WhatsApp us</a> or write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+                  </p>
+                )}
+                <button className="btn" type="submit" disabled={sending}><span>{sending ? 'Sending…' : 'Send enquiry'}</span><i><Arrow size={14} /></i></button>
               </motion.form>
             )}
           </AnimatePresence>

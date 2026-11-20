@@ -7,6 +7,8 @@
     npm run build      # production build in /dist
     npm run preview    # preview the production build
 
+The contact form sends enquiries to the release hub when built with `VITE_CONTACT_API=https://<hub>` (see `.env.example`); they appear in the hub's enquiries dashboard at `https://<hub>/admin`. Without it, the form opens the visitor's email app.
+
 Deploys as a static site on Netlify or Vercel (`public/_redirects` and `vercel.json` make direct links like /products/cobot work).
 
 ## Where things live

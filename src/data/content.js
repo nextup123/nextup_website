@@ -12,6 +12,11 @@ export const SITE = {
   phone: '918076369462',
   phoneLabel: '+91 80763 69462',
   email: 'nextuprobotics@gmail.com',
+  // Contact form: enquiries are sent to the release hub (POST /api/v1/contact) and appear in its
+  // enquiries dashboard. Set VITE_CONTACT_API to the hub's address when building
+  // (e.g. VITE_CONTACT_API=https://release-hub.onrender.com npm run build).
+  // Left empty, the form opens the visitor's email app instead, as before.
+  contactApi: (import.meta.env.VITE_CONTACT_API || '').replace(/\/$/, ''),
   city: 'Ghaziabad, India',
   offices: [
     { label: 'Registered', lines: ['5/189, Chiranjeev Vihar,', 'Ghaziabad, UP 201001'] },
